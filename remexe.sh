@@ -9,6 +9,11 @@ if [[ $@ -eq 0 ]]; then
 	exit 0
 fi
 
+# default value
+VMUSER=root 
+GET=false
+VMPASS=root
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
 key=$1
@@ -17,6 +22,10 @@ case $key in
 	-g|--get-app)
 		GET=true
 		shift 
+		;;
+	-u|--user)
+		VMUSER=$2
+		shift; shift
 		;;
 	-b|--back)
 		BACK=$2
@@ -38,8 +47,7 @@ case $key in
 		POSITIONAL+=("$1")
 		shift
 		;;
-esac
-done
+esac; done
 set -- "${POSITIONAL[@]}"
 
 # check if args in a list needed are there; if yes return 0 otherwise exit (and print error mgs $2)
@@ -70,14 +78,15 @@ function executeSshCommand () {
 # search app from vm and get file (as root sorry)
 function getFile () {
 	pathFile=$1
-	executeSshPass "scp root@$TARGETIP:$pathFile ." || echo "Failed to get file $pathFile"; exit 1
+	executeSshPass "scp $VMUSER@$TARGETIP:$pathFile ." || echo "Failed to get file $pathFile"; exit 1
 	return 0
 }
 
+# if before we want to fetch the app file from vm
 if [[ "$GET" -eq true ]]; then
 	argList=($app); needArgs $argList
+	filename=$(basename $APP)
 	getFile $APP
-	# TODO extract the file name and parse it 
-	echo "file succesfully imported"
+	echo "file $filename succesfully imported"
 	exit 0
 fi
