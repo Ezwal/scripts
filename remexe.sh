@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+set -e
 
 # /!\ this script needs sshpass and the vm password /!\ 
 
@@ -9,10 +10,13 @@ if [[ $@ -eq 0 ]]; then
 	exit 0
 fi
 
-# default value
+# default value, modify as needed
+TARGETIP=192.168.0.10
 VMUSER=root 
-GET=false
 VMPASS=root
+APP=/tmp
+BACK=~/root/bin
+GET=false
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -78,7 +82,7 @@ function executeSshCommand () {
 # search app from vm and get file (as root sorry)
 function getFile () {
 	pathFile=$1
-	executeSshPass "scp $VMUSER@$TARGETIP:$pathFile ." || echo "Failed to get file $pathFile"; exit 1
+	executeSshPass "scp -r $VMUSER@$TARGETIP:$pathFile ." || echo "Failed to get file $pathFile"; exit 1
 	return 0
 }
 
@@ -90,3 +94,6 @@ if [[ "$GET" -eq true ]]; then
 	echo "file $filename succesfully imported"
 	exit 0
 fi
+
+# to use recursive file watch you must have chokidar file watch 
+# TODO call node scripts
