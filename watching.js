@@ -3,13 +3,15 @@
 const fs = require('fs');
 const fse = require('chokidar');
 
-const [dirToWatch] = process.argv.slice(1);
+const [dirToWatch] = process.argv.slice(2);
+const ignoreDotfilesReg = /(^|[\/\\])\../;
 
-if (!fs.existsSync(dirToWatch)) {
-	return 1;
+if (!process.argv.slice(2) && !fs.existsSync(dirToWatch)) {
+	console.error('invalid args');
+	process.exit(1);
 }
 
-fse.watch(dirToWatch, {ignored: /(^|[\/\\])\../})
+fse.watch(dirToWatch, {ignored: ignoreDotfilesReg})
 	.on('all', (event, path) => {
-		// TODO use the bash script to grab the right file
-	})
+		console.log(`change type ${event} to ${path}`);
+	});
