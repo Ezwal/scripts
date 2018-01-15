@@ -6,7 +6,7 @@ set -e
 # Parameters handling
 
 if [[ $@ -eq 0 ]]; then
-	echo Usage: testhack.sh --target SOMEIP --vm-password PASS [--get-app] [--app APPPATH] [--back BACKSOURCE]
+	echo "Usage: testhack.sh --target SOMEIP --vm-password PASS [--get-app] [--app APPPATH] [--back BACKSOURCE]"
 	exit 0
 fi
 
@@ -73,7 +73,7 @@ function needArgs () {
 
 # use sshpass to communicate a password to ssh command of any kind
 function executeSshPass () {
-	sshpass -p $VMPASS $1
+	sshpass -p "$VMPASS" "$1"
 	return "$?"
 }
 
@@ -99,25 +99,25 @@ function upFile () {
 # will return file(s) from the vm
 if [[ -n "$TOUPLOAD" ]]; then
 	# TODO path shenanigan and make it work. simple
-	filename=$(basename $APP)
-	dlFile $APP
-	mv $filename $BACK
+	filename=$(basename "$APP")
+	dlFile "$APP"
+	mv "$filename" "$BACK"
 	echo "file $filename succesfully imported"
 	exit 0
 fi
 
 # if before we want to fetch the app file from vm
-if [[ "$GET" -eq true ]]; then
-	needArgs $APP
-	filename=$(basename $APP)
-	dlFile $APP
-	mv $filename $BACK
-	echo "file $filename succesfully imported"
+if [[ "$GET" == true ]]; then
+	needArgs "$APP"
+	filename=$(basename "$APP")
+	dlFile "$APP"
+	mv "$filename" "$BACK"
+	echo file "$filename" succesfully imported
 	exit 0
 fi
 
 
 
 # watching $APP directory
-needsArgs $APP "you need to set APP directory in order to watch it"
-exec ./watching.js $BACK
+needsArgs "$APP" "you need to set APP directory in order to watch it"
+exec ./watching.js "$BACK"
