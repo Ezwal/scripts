@@ -16,6 +16,7 @@ VMUSER=root
 VMPASS=root
 APP=/tmp 				# App file localisation
 BACK=$PWD 				# Path for back-end file
+REMOTE_BACK="to be defined"
 GET=false 				# If true fetch the app file following $APP path
 
 POSITIONAL=()
@@ -31,10 +32,10 @@ case $key in
 		VMUSER=$2
 		shift; shift
 		;;
-	-b|--back)
-		BACK=$2
-		shift; shift
-		;;
+  -b|--back)
+    BACK=$2
+    shift; shift
+    ;;
 	-a|--app)
 		APP=$2
 		shift; shift
@@ -79,20 +80,20 @@ function executeSshPass () {
 
 # execute as root a bash command (using sshpass), exit if failure (TODO change that ?)
 function executeSshCommand () {
-	executeSshPass "ssh $VMUSER@$TARGETIP $1" || echo "Failed to execute command $1"; exit 1
+	executeSshPass "ssh $VMUSER@$TARGETIP $1" || { echo "Failed to execute command $1"; exit 1 }
 	return 0
 }
 
 # search app from vm and get file
 function dlFile () {
 	pathFile=$1
-	executeSshPass "scp -r $VMUSER@$TARGETIP:$pathFile ." || echo "Failed to download file $pathFile"; exit 1
+	executeSshPass "scp -r $VMUSER@$TARGETIP:$pathFile ." || { echo "Failed to download file $pathFile"; exit 1 }
 	return 0
 }
 
 function upFile () {
 	pathFile=$1
-	executeSshPass "scp -r $pathFile $VMUSER@$TARGETIP:$pathFile" || echo "Failed to upload file $pathFile"; exit 1
+	executeSshPass "scp -r $pathFile $VMUSER@$TARGETIP:$pathFile" || { echo "Failed to upload file $pathFile"; exit 1 }
 	return 0
 }
 
@@ -116,8 +117,11 @@ if [[ "$GET" == true ]]; then
 	exit 0
 fi
 
-
-
-# watching $APP directory
-needsArgs "$APP" "you need to set APP directory in order to watch it"
-exec ./watching.js "$BACK"
+while :
+do
+    CHANGED=$(watching "$BACK")
+    if [[ $? -eq 0 ]]; then
+        # TODO transformed CHANGED FROM LOCAL TO REMOTE
+        upFile "$CHANGED"
+    fi
+done
