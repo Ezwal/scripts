@@ -2,14 +2,17 @@
   (:require [clojure.string :as string]
             [clojure.java.shell :refer [sh]]))
 
-(defn split-at-pipe [s] (string/split s #"\|"))
-(defn split-at-space [s] (string/split s #" "))
-(defn trim-space [v] (remove #(= "" %) v))
-(defn is-resolvable? [o] (resolve (symbol o)))
+(defn- split-at-pipe [s] (string/split s #"\|"))
+(defn- split-at-space [s] (string/split s #" "))
 
-(defn symbolify-or-typify [l] (if (is-resolvable? (first l))
+(defn- trim-space [v] (remove #(= "" %) v))
+(defn- is-resolvable? [o] (resolve (symbol o)))
+
+(defn- wrap-shell-call [l] `(get (sh ~@l) :out))
+
+(defn- symbolify-or-typify [l] (if (is-resolvable? (first l))
                                 (map read-string l)
-                                `(get (sh ~@l) :out)))
+                                (wrap-shell-call l)))
 
 (defn parse-piped-string [s]
   (let [instructions (split-at-pipe s)]
