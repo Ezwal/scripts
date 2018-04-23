@@ -9,7 +9,7 @@
 
 (defn symbolify-or-typify [l] (if (is-resolvable? (first l))
                                 (map read-string l)
-                                (cons 'sh l)))
+                                `(get (sh ~@l) :out)))
 
 (defn parse-piped-string [s]
   (let [instructions (split-at-pipe s)]
